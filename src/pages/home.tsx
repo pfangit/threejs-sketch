@@ -1,78 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
-function createGrid(scene: THREE.Scene, size: number, divisions: number) {
-  const gridHelper = new THREE.GridHelper(size, divisions, 0x444444, 0x222222);
-  gridHelper.rotation.x = Math.PI / 2;
-  scene.add(gridHelper);
-}
-
-function createSampleGeometry(scene: THREE.Scene) {
-  const rectShape1 = new THREE.Shape();
-  rectShape1.moveTo(-1, -1);
-  rectShape1.lineTo(1, -1);
-  rectShape1.lineTo(1, 1);
-  rectShape1.lineTo(-1, 1);
-  rectShape1.lineTo(-1, -1);
-
-  const rectGeometry1 = new THREE.ShapeGeometry(rectShape1);
-  const rectMaterial1 = new THREE.MeshBasicMaterial({
-    color: 0x4fc3f7,
-    side: THREE.DoubleSide,
-  });
-  const rect1 = new THREE.Mesh(rectGeometry1, rectMaterial1);
-  rect1.position.set(0, 0, 0);
-  scene.add(rect1);
-
-  const rectEdges1 = new THREE.EdgesGeometry(rectGeometry1);
-  const rectLine1 = new THREE.LineSegments(
-    rectEdges1,
-    new THREE.LineBasicMaterial({ color: 0xffffff })
-  );
-  rectLine1.position.copy(rect1.position);
-  scene.add(rectLine1);
-
-  const circleGeometry = new THREE.CircleGeometry(1, 32);
-  const circleMaterial = new THREE.MeshBasicMaterial({
-    color: 0x81c784,
-    side: THREE.DoubleSide,
-  });
-  const circle = new THREE.Mesh(circleGeometry, circleMaterial);
-  circle.position.set(5, 3, 0);
-  scene.add(circle);
-
-  const circleEdges = new THREE.EdgesGeometry(circleGeometry);
-  const circleLine = new THREE.LineSegments(
-    circleEdges,
-    new THREE.LineBasicMaterial({ color: 0xffffff })
-  );
-  circleLine.position.copy(circle.position);
-  scene.add(circleLine);
-
-  const triangleShape = new THREE.Shape();
-  triangleShape.moveTo(0, 1.5);
-  triangleShape.lineTo(-1.3, -0.75);
-  triangleShape.lineTo(1.3, -0.75);
-  triangleShape.lineTo(0, 1.5);
-
-  const triangleGeometry = new THREE.ShapeGeometry(triangleShape);
-  const triangleMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffb74d,
-    side: THREE.DoubleSide,
-  });
-  const triangle = new THREE.Mesh(triangleGeometry, triangleMaterial);
-  triangle.position.set(-4, -3, 0);
-  scene.add(triangle);
-
-  const triangleEdges = new THREE.EdgesGeometry(triangleGeometry);
-  const triangleLine = new THREE.LineSegments(
-    triangleEdges,
-    new THREE.LineBasicMaterial({ color: 0xffffff })
-  );
-  triangleLine.position.copy(triangle.position);
-  scene.add(triangleLine);
-}
-
 const RULER_THICKNESS = 24;
 
 interface RulerProps {
@@ -113,10 +41,10 @@ function Ruler({ type, pixelsPerUnit, originPixel, containerSize }: RulerProps) 
     ctx.textBaseline = "middle";
 
     const unitsPerPixel = 1 / pixelsPerUnit;
-    
+
     let majorStep = 50;
     let minorStep = 10;
-    
+
     if (pixelsPerUnit < 0.5) {
       majorStep = 100;
       minorStep = 20;
@@ -208,12 +136,79 @@ function Ruler({ type, pixelsPerUnit, originPixel, containerSize }: RulerProps) 
   );
 }
 
+function createSampleGeometry(scene: THREE.Scene) {
+  const rectShape1 = new THREE.Shape();
+  rectShape1.moveTo(-1, -1);
+  rectShape1.lineTo(1, -1);
+  rectShape1.lineTo(1, 1);
+  rectShape1.lineTo(-1, 1);
+  rectShape1.lineTo(-1, -1);
+
+  const rectGeometry1 = new THREE.ShapeGeometry(rectShape1);
+  const rectMaterial1 = new THREE.MeshBasicMaterial({
+    color: 0x4fc3f7,
+    side: THREE.DoubleSide,
+  });
+  const rect1 = new THREE.Mesh(rectGeometry1, rectMaterial1);
+  rect1.position.set(0, 0, 0);
+  scene.add(rect1);
+
+  const rectEdges1 = new THREE.EdgesGeometry(rectGeometry1);
+  const rectLine1 = new THREE.LineSegments(
+    rectEdges1,
+    new THREE.LineBasicMaterial({ color: 0xffffff })
+  );
+  rectLine1.position.copy(rect1.position);
+  scene.add(rectLine1);
+
+  const circleGeometry = new THREE.CircleGeometry(1, 32);
+  const circleMaterial = new THREE.MeshBasicMaterial({
+    color: 0x81c784,
+    side: THREE.DoubleSide,
+  });
+  const circle = new THREE.Mesh(circleGeometry, circleMaterial);
+  circle.position.set(5, 3, 0);
+  scene.add(circle);
+
+  const circleEdges = new THREE.EdgesGeometry(circleGeometry);
+  const circleLine = new THREE.LineSegments(
+    circleEdges,
+    new THREE.LineBasicMaterial({ color: 0xffffff })
+  );
+  circleLine.position.copy(circle.position);
+  scene.add(circleLine);
+
+  const triangleShape = new THREE.Shape();
+  triangleShape.moveTo(0, 1.5);
+  triangleShape.lineTo(-1.3, -0.75);
+  triangleShape.lineTo(1.3, -0.75);
+  triangleShape.lineTo(0, 1.5);
+
+  const triangleGeometry = new THREE.ShapeGeometry(triangleShape);
+  const triangleMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffb74d,
+    side: THREE.DoubleSide,
+  });
+  const triangle = new THREE.Mesh(triangleGeometry, triangleMaterial);
+  triangle.position.set(-4, -3, 0);
+  scene.add(triangle);
+
+  const triangleEdges = new THREE.EdgesGeometry(triangleGeometry);
+  const triangleLine = new THREE.LineSegments(
+    triangleEdges,
+    new THREE.LineBasicMaterial({ color: 0xffffff })
+  );
+  triangleLine.position.copy(triangle.position);
+  scene.add(triangleLine);
+}
+
 function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const gridCanvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.OrthographicCamera | null>(null);
-  
+
   const [pixelsPerUnit, setPixelsPerUnit] = useState(40);
   const [originPixelX, setOriginPixelX] = useState(400);
   const [originPixelY, setOriginPixelY] = useState(300);
@@ -225,6 +220,122 @@ function HomePage() {
   const originRef = useRef({ x: 0, y: 0 });
   const zoomRef = useRef(1);
 
+  const drawGrid = (ppu: number, ox: number, oy: number, w: number, h: number) => {
+    const canvas = gridCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fillRect(0, 0, w, h);
+
+    const unitsPerPixel = 1 / ppu;
+
+    let majorStep = 50;
+    let minorStep = 10;
+
+    if (ppu < 0.5) {
+      majorStep = 100;
+      minorStep = 20;
+    } else if (ppu < 1) {
+      majorStep = 50;
+      minorStep = 10;
+    } else if (ppu < 2) {
+      majorStep = 20;
+      minorStep = 5;
+    } else if (ppu < 5) {
+      majorStep = 10;
+      minorStep = 2;
+    } else if (ppu < 10) {
+      majorStep = 5;
+      minorStep = 1;
+    } else {
+      majorStep = 2;
+      minorStep = 0.5;
+    }
+
+    const worldLeft = (0 - ox) * unitsPerPixel;
+    const worldRight = (w - ox) * unitsPerPixel;
+    const worldTop = (0 - oy) * unitsPerPixel;
+    const worldBottom = (h - oy) * unitsPerPixel;
+
+    const startX = Math.floor(worldLeft / minorStep) * minorStep;
+    const endX = Math.ceil(worldRight / minorStep) * minorStep;
+    const startY = Math.floor(worldTop / minorStep) * minorStep;
+    const endY = Math.ceil(worldBottom / minorStep) * minorStep;
+
+    ctx.strokeStyle = "#222222";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+
+    for (let wx = startX; wx <= endX; wx += minorStep) {
+      const px = ox + wx * ppu;
+      if (px >= 0 && px <= w) {
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, h);
+      }
+    }
+
+    for (let wy = startY; wy <= endY; wy += minorStep) {
+      const py = oy + wy * ppu;
+      if (py >= 0 && py <= h) {
+        ctx.moveTo(0, py);
+        ctx.lineTo(w, py);
+      }
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = "#444444";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+
+    const majorStartX = Math.floor(worldLeft / majorStep) * majorStep;
+    const majorEndX = Math.ceil(worldRight / majorStep) * majorStep;
+    const majorStartY = Math.floor(worldTop / majorStep) * majorStep;
+    const majorEndY = Math.ceil(worldBottom / majorStep) * majorStep;
+
+    for (let wx = majorStartX; wx <= majorEndX; wx += majorStep) {
+      const px = ox + wx * ppu;
+      if (px >= 0 && px <= w) {
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, h);
+      }
+    }
+
+    for (let wy = majorStartY; wy <= majorEndY; wy += majorStep) {
+      const py = oy + wy * ppu;
+      if (py >= 0 && py <= h) {
+        ctx.moveTo(0, py);
+        ctx.lineTo(w, py);
+      }
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = "#666666";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const originPx = ox;
+    const originPy = oy;
+    if (originPx >= 0 && originPx <= w) {
+      ctx.moveTo(originPx, 0);
+      ctx.lineTo(originPx, h);
+    }
+    if (originPy >= 0 && originPy <= h) {
+      ctx.moveTo(0, originPy);
+      ctx.lineTo(w, originPy);
+    }
+    ctx.stroke();
+  };
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -235,7 +346,6 @@ function HomePage() {
     setContainerHeight(height);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a1a);
     sceneRef.current = scene;
 
     const aspect = width / height;
@@ -252,13 +362,13 @@ function HomePage() {
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    createGrid(scene, 40, 40);
     createSampleGeometry(scene);
 
     const updateCamera = () => {
@@ -280,10 +390,14 @@ function HomePage() {
 
       const centerX = w / 2;
       const centerY = h / 2;
-      setOriginPixelX(centerX - originRef.current.x * ppu);
-      setOriginPixelY(centerY + originRef.current.y * ppu);
-      
+      const ox = centerX - originRef.current.x * ppu;
+      const oy = centerY + originRef.current.y * ppu;
+      setOriginPixelX(ox);
+      setOriginPixelY(oy);
+
       setZoomPercent(Math.round(zoomRef.current * 100));
+
+      drawGrid(ppu, ox, oy, w, h);
     };
 
     const handleMouseDown = (e: MouseEvent) => {
@@ -374,6 +488,10 @@ function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    drawGrid(pixelsPerUnit, originPixelX, originPixelY, containerWidth, containerHeight);
+  }, [pixelsPerUnit, originPixelX, originPixelY, containerWidth, containerHeight]);
+
   return (
     <div className="flex flex-col h-screen w-full">
       <div className="bg-gray-800 text-white px-4 py-2 flex items-center gap-4 flex-shrink-0">
@@ -386,6 +504,11 @@ function HomePage() {
         <Ruler type="horizontal" pixelsPerUnit={pixelsPerUnit} originPixel={originPixelX} containerSize={containerWidth} />
         <div className="flex-1 relative">
           <Ruler type="vertical" pixelsPerUnit={pixelsPerUnit} originPixel={originPixelY} containerSize={containerHeight} />
+          <canvas
+            ref={gridCanvasRef}
+            className="absolute inset-0 pointer-events-none"
+            style={{ left: RULER_THICKNESS }}
+          />
           <div
             ref={containerRef}
             className="absolute inset-0"
