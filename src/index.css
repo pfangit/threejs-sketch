@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+html,
+body,
+.ant-pro-layout .ant-pro-layout-bg-list {
+  background-image: linear-gradient(
+    120deg,
+    rgb(231, 241, 255) 0,
+    rgb(239, 242, 248)
+  );
+}
+
+html,
+body,
+#root,
+.ant-pro-layout-watermark-wrapper {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+canvas {
+  display: block;
+}
