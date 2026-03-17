@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { RULER_THICKNESS, Ruler } from "@/components/ruler.tsx";
+import type { SceneObject } from "@/types";
 
-function Sketch({ scene }: { scene: THREE.Scene }) {
+interface SketchProps {
+  scene: THREE.Scene;
+  objects: SceneObject[];
+  onSelectObject: (id: string | null) => void;
+  onDragObject: (id: string, x: number, y: number) => void;
+}
+
+function Sketch({ scene, objects, onSelectObject, onDragObject }: SketchProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.OrthographicCamera | null>(null);
+  const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
 
   const [pixelsPerUnit, setPixelsPerUnit] = useState(40);
   const [originPixelX, setOriginPixelX] = useState(400);
@@ -24,6 +33,14 @@ function Sketch({ scene }: { scene: THREE.Scene }) {
   } | null>(null);
   const originRef = useRef({ x: 0, y: 0 });
   const zoomRef = useRef(1);
+
+  const dragStartRef = useRef<{
+    x: number;
+    y: number;
+    objectId: string;
+    startPos: { x: number; y: number };
+  } | null>(null);
+  const isDraggingRef = useRef(false);
 
   const drawGrid = useCallback(
     (ppu: number, ox: number, oy: number, w: number, h: number) => {
@@ -144,6 +161,36 @@ function Sketch({ scene }: { scene: THREE.Scene }) {
     [],
   );
 
+  const screenToWorld = useCallback((screenX: number, screenY: number) => {
+    if (!containerRef.current || !cameraRef.current) return null;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = screenX - rect.left;
+    const y = screenY - rect.top;
+
+    const w = containerRef.current.clientWidth;
+    const h = containerRef.current.clientHeight;
+    const aspect = w / h;
+    const frustumSize = 20 / zoomRef.current;
+
+    const unitsPerPixel = (frustumSize * aspect) / w;
+
+    const worldX = (x - w / 2) * unitsPerPixel + originRef.current.x;
+    const worldY = -(y - h / 2) * unitsPerPixel + originRef.current.y;
+
+    return { x: worldX, y: worldY };
+  }, []);
+
+  const getMeshesForRaycasting = useCallback(() => {
+    const meshes: THREE.Mesh[] = [];
+    objects.forEach((obj) => {
+      if (obj.mesh && obj.visible && !obj.locked) {
+        meshes.push(obj.mesh);
+      }
+    });
+    return meshes;
+  }, [objects]);
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -214,29 +261,93 @@ function Sketch({ scene }: { scene: THREE.Scene }) {
           originY: originRef.current.y,
         };
         e.preventDefault();
+        return;
+      }
+
+      if (e.button === 0 && !e.altKey) {
+        if (!containerRef.current || !cameraRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const mouse = new THREE.Vector2(
+          ((e.clientX - rect.left) / containerRef.current.clientWidth) * 2 - 1,
+          -((e.clientY - rect.top) / containerRef.current.clientHeight) * 2 + 1,
+        );
+
+        raycasterRef.current.setFromCamera(mouse, cameraRef.current);
+        const meshes = getMeshesForRaycasting();
+        const intersects = raycasterRef.current.intersectObjects(meshes);
+
+        if (intersects.length > 0) {
+          const hitMesh = intersects[0].object as THREE.Mesh;
+          const objectId = hitMesh.userData.id as string;
+          const worldPos = screenToWorld(e.clientX, e.clientY);
+
+          if (objectId && worldPos) {
+            const obj = objects.find((o) => o.id === objectId);
+            if (obj && !obj.locked) {
+              onSelectObject(objectId);
+              dragStartRef.current = {
+                x: e.clientX,
+                y: e.clientY,
+                objectId,
+                startPos: { x: obj.position.x, y: obj.position.y },
+              };
+              isDraggingRef.current = false;
+            }
+          }
+        } else {
+          onSelectObject(null);
+        }
       }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!panStartRef.current || !containerRef.current) return;
+      if (panStartRef.current) {
+        if (!containerRef.current) return;
 
-      const w = containerRef.current.clientWidth;
-      const h = containerRef.current.clientHeight;
-      const aspect = w / h;
-      const frustumSize = 20 / zoomRef.current;
-      const unitsPerPixel = (frustumSize * aspect) / w;
+        const w = containerRef.current.clientWidth;
+        const h = containerRef.current.clientHeight;
+        const aspect = w / h;
+        const frustumSize = 20 / zoomRef.current;
+        const unitsPerPixel = (frustumSize * aspect) / w;
 
-      const deltaX = (e.clientX - panStartRef.current.x) * unitsPerPixel;
-      const deltaY = (e.clientY - panStartRef.current.y) * unitsPerPixel;
+        const deltaX = (e.clientX - panStartRef.current.x) * unitsPerPixel;
+        const deltaY = (e.clientY - panStartRef.current.y) * unitsPerPixel;
 
-      originRef.current.x = panStartRef.current.originX - deltaX;
-      originRef.current.y = panStartRef.current.originY + deltaY;
+        originRef.current.x = panStartRef.current.originX - deltaX;
+        originRef.current.y = panStartRef.current.originY + deltaY;
 
-      updateCamera();
+        updateCamera();
+        return;
+      }
+
+      if (dragStartRef.current) {
+        if (!containerRef.current) return;
+
+        const w = containerRef.current.clientWidth;
+        const h = containerRef.current.clientHeight;
+        const aspect = w / h;
+        const frustumSize = 20 / zoomRef.current;
+        const unitsPerPixel = (frustumSize * aspect) / w;
+
+        const deltaX = (e.clientX - dragStartRef.current.x) * unitsPerPixel;
+        const deltaY = (e.clientY - dragStartRef.current.y) * unitsPerPixel;
+
+        if (Math.abs(deltaX) > 0.01 || Math.abs(deltaY) > 0.01) {
+          isDraggingRef.current = true;
+        }
+
+        const newX = dragStartRef.current.startPos.x + deltaX;
+        const newY = dragStartRef.current.startPos.y - deltaY;
+
+        onDragObject(dragStartRef.current.objectId, newX, newY);
+      }
     };
 
     const handleMouseUp = () => {
       panStartRef.current = null;
+      dragStartRef.current = null;
+      isDraggingRef.current = false;
     };
 
     const handleWheel = (e: WheelEvent) => {
@@ -296,7 +407,15 @@ function Sketch({ scene }: { scene: THREE.Scene }) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [drawGrid, scene]);
+  }, [
+    drawGrid,
+    scene,
+    getMeshesForRaycasting,
+    screenToWorld,
+    objects,
+    onSelectObject,
+    onDragObject,
+  ]);
 
   useEffect(() => {
     drawGrid(
@@ -345,7 +464,7 @@ function Sketch({ scene }: { scene: THREE.Scene }) {
         <div className="absolute bottom-3 left-3 bg-gray-800/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-md text-xs flex items-center gap-3 z-10">
           <span className="font-medium">{zoomPercent}%</span>
           <span className="text-gray-400 text-[10px]">
-            Alt+拖拽平移 | 滚轮缩放
+            点击选中 | 拖拽移动 | Alt+拖拽平移 | 滚轮缩放
           </span>
         </div>
       </div>

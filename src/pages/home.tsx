@@ -132,6 +132,17 @@ function HomePage() {
         existing.edges.visible = obj.visible;
         const material = existing.mesh.material as THREE.MeshBasicMaterial;
         material.color.set(obj.color);
+
+        if (obj.selected) {
+          existing.edges.material = new THREE.LineBasicMaterial({
+            color: 0x00aaff,
+            linewidth: 2,
+          });
+        } else {
+          existing.edges.material = new THREE.LineBasicMaterial({
+            color: 0xffffff,
+          });
+        }
       }
     });
 
@@ -161,6 +172,29 @@ function HomePage() {
       sceneObjectsRef.current.clear();
     };
   }, [scene]);
+
+  const handleSelectObject = useCallback((id: string | null) => {
+    setObjects((prev) =>
+      prev.map((obj) => ({
+        ...obj,
+        selected: id === null ? false : obj.id === id,
+      })),
+    );
+  }, []);
+
+  const handleDragObject = useCallback((id: string, x: number, y: number) => {
+    setObjects((prev) =>
+      prev.map((obj) => {
+        if (obj.id === id) {
+          return {
+            ...obj,
+            position: { ...obj.position, x, y },
+          };
+        }
+        return obj;
+      }),
+    );
+  }, []);
 
   const handleObjectSelect = useCallback((id: string) => {
     setObjects((prev) =>
@@ -224,7 +258,12 @@ function HomePage() {
         onObjectToggleLock={handleObjectToggleLock}
       />
       <div className="flex-1 relative overflow-hidden">
-        <Sketch scene={scene} />
+        <Sketch
+          scene={scene}
+          objects={objects}
+          onSelectObject={handleSelectObject}
+          onDragObject={handleDragObject}
+        />
       </div>
       <RightPanel
         selectedObject={selectedObject}
