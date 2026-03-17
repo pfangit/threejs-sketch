@@ -7,7 +7,7 @@ declare global {
     };
     glob: (
       path: string,
-      options: Record<string, any>,
+      options: Record<string, unknown>,
     ) => {
       [key: string]: { default: object[] };
     };
@@ -26,10 +26,20 @@ export interface SketchCurvePoint {
   point: string;
 }
 
+export interface SketchFrame {
+  _class: "rect";
+  constrainProportions: boolean;
+  height: number;
+  width: number;
+  x: number;
+  y: number;
+}
+
 export interface SketchShapePath {
   _class: "shapePath";
   isClosed: boolean;
   pointRadiusBehaviour: number;
+  frame?: SketchFrame;
   points: SketchCurvePoint[];
 }
 

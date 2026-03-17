@@ -16,43 +16,48 @@ function parsePointString(pointStr: string): { x: number; y: number } {
 function createShapePathGeometry(
   shapePath: SketchShapePath,
 ): THREE.BufferGeometry {
-  const { points, isClosed } = shapePath;
+  const { points, isClosed, frame } = shapePath;
 
   if (points.length < 2) {
     return new THREE.BufferGeometry();
   }
 
+  const width = frame?.width || 1;
+  const height = frame?.height || 1;
+
   const shape = new THREE.Shape();
   const firstPoint = parsePointString(points[0].point);
-  shape.moveTo(firstPoint.x, firstPoint.y);
+  shape.moveTo(firstPoint.x * width, (1 - firstPoint.y) * height);
 
   for (let i = 1; i < points.length; i++) {
     const currentPoint = points[i];
     const point = parsePointString(currentPoint.point);
+    const px = point.x * width;
+    const py = (1 - point.y) * height;
 
     if (currentPoint.hasCurveFrom && currentPoint.hasCurveTo) {
       const curveFrom = parsePointString(currentPoint.curveFrom);
       const curveTo = parsePointString(currentPoint.curveTo);
       shape.bezierCurveTo(
-        curveFrom.x,
-        curveFrom.y,
-        curveTo.x,
-        curveTo.y,
-        point.x,
-        point.y,
+        curveFrom.x * width,
+        (1 - curveFrom.y) * height,
+        curveTo.x * width,
+        (1 - curveTo.y) * height,
+        px,
+        py,
       );
     } else if (currentPoint.hasCurveFrom || currentPoint.hasCurveTo) {
       const cp = currentPoint.hasCurveFrom
         ? parsePointString(currentPoint.curveFrom)
         : parsePointString(currentPoint.curveTo);
-      shape.quadraticCurveTo(cp.x, cp.y, point.x, point.y);
+      shape.quadraticCurveTo(cp.x * width, (1 - cp.y) * height, px, py);
     } else {
-      shape.lineTo(point.x, point.y);
+      shape.lineTo(px, py);
     }
   }
 
   if (isClosed && points.length > 2) {
-    shape.lineTo(firstPoint.x, firstPoint.y);
+    shape.lineTo(firstPoint.x * width, (1 - firstPoint.y) * height);
   }
 
   return new THREE.ShapeGeometry(shape);
@@ -123,6 +128,14 @@ const exampleShapePath: SketchShapePath = {
   _class: "shapePath",
   isClosed: true,
   pointRadiusBehaviour: 1,
+  frame: {
+    _class: "rect",
+    constrainProportions: false,
+    height: 60.8053905880155,
+    width: 525.523646474661,
+    x: 94.9585644030634,
+    y: 162.481272026508,
+  },
   points: [
     {
       _class: "curvePoint",
