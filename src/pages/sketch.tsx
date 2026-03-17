@@ -316,14 +316,8 @@ function Sketch({ scene }: { scene: THREE.Scene }) {
   ]);
 
   return (
-    <div className="flex flex-col h-screen w-full">
-      <div className="bg-gray-800 text-white px-4 py-2 flex items-center gap-4 flex-shrink-0">
-        <span className="text-sm">缩放比例: {zoomPercent}%</span>
-        <span className="text-xs text-gray-400">
-          Alt+左键/中键/右键拖拽平移 | 滚轮缩放
-        </span>
-      </div>
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex flex-col h-full w-full">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
         <Ruler
           type="horizontal"
           pixelsPerUnit={pixelsPerUnit}
@@ -347,6 +341,12 @@ function Sketch({ scene }: { scene: THREE.Scene }) {
             className="absolute inset-0"
             style={{ left: RULER_THICKNESS }}
           />
+        </div>
+        <div className="absolute bottom-3 left-3 bg-gray-800/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-md text-xs flex items-center gap-3 z-10">
+          <span className="font-medium">{zoomPercent}%</span>
+          <span className="text-gray-400 text-[10px]">
+            Alt+拖拽平移 | 滚轮缩放
+          </span>
         </div>
       </div>
     </div>
