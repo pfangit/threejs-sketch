@@ -353,10 +353,7 @@ function Sketch({ scene, objects, onSelectObject, onDragObject }: SketchProps) {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      zoomRef.current = Math.max(
-        0.1,
-        Math.min(10, zoomRef.current * zoomFactor),
-      );
+      zoomRef.current = zoomRef.current * zoomFactor;
       updateCamera();
     };
 
