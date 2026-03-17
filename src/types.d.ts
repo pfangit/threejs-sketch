@@ -14,15 +14,35 @@ declare global {
   }
 }
 
+export interface SketchCurvePoint {
+  _class: "curvePoint";
+  cornerRadius: number;
+  cornerStyle: number;
+  curveFrom: string;
+  curveMode: number;
+  curveTo: string;
+  hasCurveFrom: boolean;
+  hasCurveTo: boolean;
+  point: string;
+}
+
+export interface SketchShapePath {
+  _class: "shapePath";
+  isClosed: boolean;
+  pointRadiusBehaviour: number;
+  points: SketchCurvePoint[];
+}
+
 export interface SceneObject {
   id: string;
   name: string;
-  type: "rect" | "circle" | "triangle";
+  type: "rect" | "circle" | "triangle" | "shapePath";
   visible: boolean;
   locked: boolean;
   selected: boolean;
   position: { x: number; y: number; z: number };
   color: string;
+  shapePath?: SketchShapePath;
   mesh: THREE.Mesh | null;
   edges: THREE.LineSegments | null;
 }

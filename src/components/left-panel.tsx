@@ -4,6 +4,7 @@ import {
   Circle,
   Eye,
   EyeOff,
+  Hexagon,
   Layers,
   Lock,
   Square,
@@ -34,6 +35,8 @@ export function LeftPanel({
         return <Circle size={14} />;
       case "triangle":
         return <Triangle size={14} />;
+      case "shapePath":
+        return <Hexagon size={14} />;
       default:
         return <Square size={14} />;
     }

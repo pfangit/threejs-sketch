@@ -3,7 +3,60 @@ import * as THREE from "three";
 import { LeftPanel } from "@/components/left-panel.tsx";
 import { RightPanel } from "@/components/right-panel.tsx";
 import Sketch from "@/pages/sketch.tsx";
-import type { SceneObject } from "@/types";
+import type { SceneObject, SketchShapePath } from "@/types";
+
+function parsePointString(pointStr: string): { x: number; y: number } {
+  const match = pointStr.match(/\{([^,]+),\s*([^}]+)\}/);
+  if (match) {
+    return { x: parseFloat(match[1]), y: parseFloat(match[2]) };
+  }
+  return { x: 0, y: 0 };
+}
+
+function createShapePathGeometry(
+  shapePath: SketchShapePath,
+): THREE.BufferGeometry {
+  const { points, isClosed } = shapePath;
+
+  if (points.length < 2) {
+    return new THREE.BufferGeometry();
+  }
+
+  const shape = new THREE.Shape();
+  const firstPoint = parsePointString(points[0].point);
+  shape.moveTo(firstPoint.x, firstPoint.y);
+
+  for (let i = 1; i < points.length; i++) {
+    const currentPoint = points[i];
+    const point = parsePointString(currentPoint.point);
+
+    if (currentPoint.hasCurveFrom && currentPoint.hasCurveTo) {
+      const curveFrom = parsePointString(currentPoint.curveFrom);
+      const curveTo = parsePointString(currentPoint.curveTo);
+      shape.bezierCurveTo(
+        curveFrom.x,
+        curveFrom.y,
+        curveTo.x,
+        curveTo.y,
+        point.x,
+        point.y,
+      );
+    } else if (currentPoint.hasCurveFrom || currentPoint.hasCurveTo) {
+      const cp = currentPoint.hasCurveFrom
+        ? parsePointString(currentPoint.curveFrom)
+        : parsePointString(currentPoint.curveTo);
+      shape.quadraticCurveTo(cp.x, cp.y, point.x, point.y);
+    } else {
+      shape.lineTo(point.x, point.y);
+    }
+  }
+
+  if (isClosed && points.length > 2) {
+    shape.lineTo(firstPoint.x, firstPoint.y);
+  }
+
+  return new THREE.ShapeGeometry(shape);
+}
 
 function createMeshFromObject(obj: Omit<SceneObject, "mesh" | "edges">): {
   mesh: THREE.Mesh;
@@ -35,6 +88,14 @@ function createMeshFromObject(obj: Omit<SceneObject, "mesh" | "edges">): {
       geometry = new THREE.ShapeGeometry(shape);
       break;
     }
+    case "shapePath": {
+      if (obj.shapePath) {
+        geometry = createShapePathGeometry(obj.shapePath);
+      } else {
+        geometry = new THREE.BufferGeometry();
+      }
+      break;
+    }
     default: {
       geometry = new THREE.BoxGeometry(1, 1, 1);
     }
@@ -57,6 +118,47 @@ function createMeshFromObject(obj: Omit<SceneObject, "mesh" | "edges">): {
 
   return { mesh, edges };
 }
+
+const exampleShapePath: SketchShapePath = {
+  _class: "shapePath",
+  isClosed: true,
+  pointRadiusBehaviour: 1,
+  points: [
+    {
+      _class: "curvePoint",
+      cornerRadius: 0,
+      cornerStyle: 0,
+      curveFrom: "{0.300329342602128, 0}",
+      curveMode: 1,
+      curveTo: "{0.300329342602128, 0}",
+      hasCurveFrom: false,
+      hasCurveTo: false,
+      point: "{0.300329342602128, 0}",
+    },
+    {
+      _class: "curvePoint",
+      cornerRadius: 0,
+      cornerStyle: 0,
+      curveFrom: "{0, 1}",
+      curveMode: 1,
+      curveTo: "{0, 1}",
+      hasCurveFrom: false,
+      hasCurveTo: false,
+      point: "{0, 1}",
+    },
+    {
+      _class: "curvePoint",
+      cornerRadius: 0,
+      cornerStyle: 0,
+      curveFrom: "{1, 0.787909693570071}",
+      curveMode: 1,
+      curveTo: "{1, 0.787909693570071}",
+      hasCurveFrom: false,
+      hasCurveTo: false,
+      point: "{1, 0.787909693570071}",
+    },
+  ],
+};
 
 const initialObjects: Omit<SceneObject, "mesh" | "edges">[] = [
   {
@@ -88,6 +190,17 @@ const initialObjects: Omit<SceneObject, "mesh" | "edges">[] = [
     selected: false,
     position: { x: -4, y: -3, z: 0 },
     color: "#ffb74d",
+  },
+  {
+    id: "shapepath-1",
+    name: "自定义多边形",
+    type: "shapePath",
+    visible: true,
+    locked: false,
+    selected: false,
+    position: { x: -3, y: 2, z: 0 },
+    color: "#e879f9",
+    shapePath: exampleShapePath,
   },
 ];
 
