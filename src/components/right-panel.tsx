@@ -1,12 +1,8 @@
-import type { SceneObject } from "@/types";
+import { useSketch } from "@/contexts/sketch-context.tsx";
 
-export function RightPanel({
-  selectedObject,
-  onPropertyChange,
-}: {
-  selectedObject: SceneObject | null;
-  onPropertyChange: (id: string, property: string, value: unknown) => void;
-}) {
+export function RightPanel() {
+  const { selectedObject } = useSketch();
+
   if (!selectedObject) {
     return (
       <div className="w-72 bg-gray-900 border-l border-gray-700 flex flex-col h-full">
@@ -31,67 +27,32 @@ export function RightPanel({
           <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
             位置
           </h3>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <label
-                htmlFor={`pos-x-${selectedObject.id}`}
+                htmlFor={`pos-x-${selectedObject.do_objectID}`}
                 className="block text-xs text-gray-500 mb-1"
               >
                 X
               </label>
               <input
-                id={`pos-x-${selectedObject.id}`}
+                id={`pos-x-${selectedObject.do_objectID}`}
                 type="number"
-                value={selectedObject.position.x.toFixed(2)}
-                onChange={(e) =>
-                  onPropertyChange(
-                    selectedObject.id,
-                    "x",
-                    parseFloat(e.target.value),
-                  )
-                }
+                value={selectedObject.frame.x.toFixed(2)}
                 className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
               />
             </div>
             <div>
               <label
-                htmlFor={`pos-y-${selectedObject.id}`}
+                htmlFor={`pos-y-${selectedObject.do_objectID}`}
                 className="block text-xs text-gray-500 mb-1"
               >
                 Y
               </label>
               <input
-                id={`pos-y-${selectedObject.id}`}
+                id={`pos-y-${selectedObject.do_objectID}`}
                 type="number"
-                value={selectedObject.position.y.toFixed(2)}
-                onChange={(e) =>
-                  onPropertyChange(
-                    selectedObject.id,
-                    "y",
-                    parseFloat(e.target.value),
-                  )
-                }
-                className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor={`pos-z-${selectedObject.id}`}
-                className="block text-xs text-gray-500 mb-1"
-              >
-                Z
-              </label>
-              <input
-                id={`pos-z-${selectedObject.id}`}
-                type="number"
-                value={selectedObject.position.z.toFixed(2)}
-                onChange={(e) =>
-                  onPropertyChange(
-                    selectedObject.id,
-                    "z",
-                    parseFloat(e.target.value),
-                  )
-                }
+                value={selectedObject.frame.y.toFixed(2)}
                 className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -100,34 +61,51 @@ export function RightPanel({
 
         <div className="space-y-2">
           <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-            外观
+            大小
           </h3>
-          <div>
-            <label
-              htmlFor={`color-${selectedObject.id}`}
-              className="block text-xs text-gray-500 mb-1"
-            >
-              颜色
-            </label>
-            <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label
+                htmlFor={`width-${selectedObject.do_objectID}`}
+                className="block text-xs text-gray-500 mb-1"
+              >
+                宽度
+              </label>
               <input
-                id={`color-${selectedObject.id}`}
-                type="color"
-                value={selectedObject.color}
-                onChange={(e) =>
-                  onPropertyChange(selectedObject.id, "color", e.target.value)
-                }
-                className="w-8 h-8 bg-transparent border border-gray-700 rounded cursor-pointer"
-              />
-              <input
-                type="text"
-                value={selectedObject.color}
-                onChange={(e) =>
-                  onPropertyChange(selectedObject.id, "color", e.target.value)
-                }
-                className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
+                id={`width-${selectedObject.do_objectID}`}
+                type="number"
+                value={selectedObject.frame.width.toFixed(2)}
+                className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
               />
             </div>
+            <div>
+              <label
+                htmlFor={`height-${selectedObject.do_objectID}`}
+                className="block text-xs text-gray-500 mb-1"
+              >
+                高度
+              </label>
+              <input
+                id={`height-${selectedObject.do_objectID}`}
+                type="number"
+                value={selectedObject.frame.height.toFixed(2)}
+                className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+            旋转
+          </h3>
+          <div>
+            <input
+              id={`rotation-${selectedObject.do_objectID}`}
+              type="number"
+              value={selectedObject.rotation?.toFixed(2) || "0"}
+              className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:border-blue-500"
+            />
           </div>
         </div>
 
@@ -139,29 +117,25 @@ export function RightPanel({
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">类型</span>
               <span className="text-gray-300">
-                {selectedObject.type === "rect"
-                  ? "矩形"
-                  : selectedObject.type === "circle"
-                    ? "圆形"
-                    : "三角形"}
+                {selectedObject._class === "group" ? "组" : selectedObject._class}
               </span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">ID</span>
               <span className="text-gray-300 font-mono text-[10px]">
-                {selectedObject.id}
+                {selectedObject.do_objectID}
               </span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">可见</span>
               <span className="text-gray-300">
-                {selectedObject.visible ? "是" : "否"}
+                {selectedObject.isVisible ? "是" : "否"}
               </span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">锁定</span>
               <span className="text-gray-300">
-                {selectedObject.locked ? "是" : "否"}
+                {selectedObject.isLocked ? "是" : "否"}
               </span>
             </div>
           </div>

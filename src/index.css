@@ -15,10 +15,18 @@ body,
 #root,
 .ant-pro-layout-watermark-wrapper {
   height: 100%;
-  margin: 0;
   padding: 0;
+  margin: 0;
 }
 
 canvas {
   display: block;
+}
+
+:root {
+  --indent-spacing: 10px;
+}
+
+ul ul {
+  margin-left: var(--indent-spacing);
 }

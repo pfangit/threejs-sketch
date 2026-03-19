@@ -27,11 +27,13 @@
     ]
   },
   "dependencies": {
+    "@sketch-hq/sketch-file-format-ts": "^6.5.0",
     "alova": "^3.4.1",
     "clsx": "^2.1.1",
     "i18next": "^25.8.13",
     "i18next-browser-languagedetector": "^8.2.1",
     "i18next-http-backend": "^3.0.2",
+    "jszip": "^3.10.1",
     "lodash-es": "^4.17.23",
     "lucide-react": "^0.562.0",
     "rc-field-form": "^2.7.1",
